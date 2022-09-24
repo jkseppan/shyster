@@ -7,10 +7,5 @@ website:
       - 02_hyphenation.ipynb
       - 03_html.ipynb
       - 04_main.ipynb
-      - LICENSE
-      - MANIFEST.in
-      - README.md
-      - nbdev.yml
-      - settings.ini
-      - setup.py
-      - styles.css
+      - input.html
+      - output.html

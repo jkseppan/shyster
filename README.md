@@ -19,6 +19,15 @@ pip install https://github.com/jkseppan/shyster/
 
 ## How to use
 
+One top-level function does it all:
+
+``` python
+import shyster
+shyster.hyphenate_html_file('input.html', 'output.html', 'patterns/hyphen.tex')
+```
+
+If more control is needed:
+
 ``` python
 pat, ex = read_patterns(open('patterns/hyph-fi.tex').readlines())
 pat_re, pat_map = convert_patterns(pat)
@@ -59,21 +68,6 @@ hyph = hyphenator(pat_re, pat_map, ex, righthyphenmin=2)
 hyphenate_soup(soup, hyph)
 print(str(soup))
 ```
-
-    <class 'bs4.element.NavigableString'> Seitsemän veljestä
-    <class 'bs4.element.NavigableString'> 
-
-    <class 'bs4.element.NavigableString'> 
-
-    <class 'bs4.element.NavigableString'> 
-
-    <class 'bs4.element.NavigableString'> Jukolan talo, eteläisessä Hämeessä, seisoo erään mäen pohjaisella
-    rinteellä, liki Toukolan kylää. Sen läheisin ympäristö on kivinen
-    tanner, mutta alempana alkaa pellot, joissa, ennenkuin talo oli häviöön
-    mennyt, aaltoili teräinen vilja.
-    <class 'bs4.element.NavigableString'> 
-
-    <class 'bs4.element.NavigableString'> 
 
     <!DOCTYPE html>
     <html><head><title>Seit-se-män vel-jes-tä</title>
