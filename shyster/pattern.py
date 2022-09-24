@@ -21,7 +21,7 @@ def _cvt(
             pos += 1
     return tuple(res[:pos+1])
 
-# %% ../01_pattern.ipynb 7
+# %% ../01_pattern.ipynb 8
 def convert_patterns(
     patterns: Iterable[str]  # patterns as read from the TeX patterns file
 ) -> tuple[re.Pattern, Mapping[str, tuple[int, ...]]]:  # regex for patterns, and mapping from pattern to weights
@@ -35,7 +35,7 @@ def convert_patterns(
         mapping[s] = _cvt(p)
     return re.compile(f"(?=({'|'.join(regexes)}))"), mapping
 
-# %% ../01_pattern.ipynb 11
+# %% ../01_pattern.ipynb 12
 def convert_exceptions(
     exceptions: Iterable[str]
 ) -> Mapping[str, str]:  # mapping from word to word with hyphens

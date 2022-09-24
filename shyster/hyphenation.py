@@ -23,7 +23,7 @@ def add_hyphens(
 # %% ../02_hyphenation.ipynb 9
 def hyphenator(
     regex: re.Pattern,  # first return value from `pattern.convert_patterns`
-    mapping: Mapping[str, str],  # second return value from `pattern.convert_patterns`
+    mapping: Mapping[str, tuple[int,...]],  # second return value from `pattern.convert_patterns`
     exceptions: Mapping[str, str],  # return value from `pattern.convert_exceptions`
     hyphen: str='-', # hyphen character
     lefthyphenmin: int=2,  # at least this many characters before the first hyphen
