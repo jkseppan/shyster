@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "shyster"
+  site-url: "https://jkseppan.github.io/shyster"
+  description: "Add soft hyphens to HTML documents"
+  repo-branch: main
+  repo-url: "https://github.com/jkseppan/shyster"
