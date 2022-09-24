@@ -5,5 +5,5 @@ d = { 'settings': { 'branch': 'main',
                 'doc_host': 'https://jkseppan.github.io',
                 'git_url': 'https://github.com/jkseppan/shyster',
                 'lib_path': 'shyster'},
-  'syms': { 'shyster.core': {'shyster.core.foo': ('core.html#foo', 'shyster/core.py')},
+  'syms': { 'shyster.core': {'shyster.core.add_hyphens': ('core.html#add_hyphens', 'shyster/core.py')},
             'shyster.shyster': {'shyster.shyster.add_hyphens': ('shyster.html#add_hyphens', 'shyster/shyster.py')}}}
