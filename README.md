@@ -25,16 +25,66 @@ pat_re, pat_map = convert_patterns(pat)
 ex = convert_exceptions(ex)
 hyph = hyphenator(pat_re, pat_map, ex, righthyphenmin=2)
 
-[hyph(word) for word in 'Olipa kerran pieni paha noita Känkkäränkkä nimeltään'.split()]
+[hyph(word) for word in 
+ 'Jukolan talo, eteläisessä Hämeessä, seisoo erään mäen pohjaisella rinteellä, liki Toukolan kylää'\
+ .replace(',','').split()]
 ```
 
-    ['Oli-pa',
-     'ker-ran',
-     'pie-ni',
-     'pa-ha',
-     'noi-ta',
-     'Känk-kä-ränk-kä',
-     'ni-mel-tään']
+    ['Ju-ko-lan',
+     'ta-lo',
+     'ete-läi-ses-sä',
+     'Hä-mees-sä',
+     'sei-soo',
+     'erään',
+     'mäen',
+     'poh-jai-sel-la',
+     'rin-teel-lä',
+     'li-ki',
+     'Tou-ko-lan',
+     'ky-lää']
+
+``` python
+html = """
+<!doctype html><title>Seitsemän veljestä</title>
+<script>var veljekset = 7;</script>
+<body>
+<p style="margin-top: 2em">Jukolan talo, eteläisessä Hämeessä, seisoo erään mäen pohjaisella
+rinteellä, liki Toukolan kylää. Sen läheisin ympäristö on kivinen
+tanner, mutta alempana alkaa pellot, joissa, ennenkuin talo oli häviöön
+mennyt, aaltoili teräinen vilja.</p>
+</body>
+"""
+soup = BeautifulSoup(html, 'lxml')
+hyph = hyphenator(pat_re, pat_map, ex, righthyphenmin=2)
+hyphenate_soup(soup, hyph)
+print(str(soup))
+```
+
+    <class 'bs4.element.NavigableString'> Seitsemän veljestä
+    <class 'bs4.element.NavigableString'> 
+
+    <class 'bs4.element.NavigableString'> 
+
+    <class 'bs4.element.NavigableString'> 
+
+    <class 'bs4.element.NavigableString'> Jukolan talo, eteläisessä Hämeessä, seisoo erään mäen pohjaisella
+    rinteellä, liki Toukolan kylää. Sen läheisin ympäristö on kivinen
+    tanner, mutta alempana alkaa pellot, joissa, ennenkuin talo oli häviöön
+    mennyt, aaltoili teräinen vilja.
+    <class 'bs4.element.NavigableString'> 
+
+    <class 'bs4.element.NavigableString'> 
+
+    <!DOCTYPE html>
+    <html><head><title>Seit-se-män vel-jes-tä</title>
+    <script>var veljekset = 7;</script>
+    </head><body>
+    <p style="margin-top: 2em">Ju-ko-lan ta-lo, ete-läi-ses-sä Hä-mees-sä, sei-soo erään mäen poh-jai-sel-la
+    rin-teel-lä, li-ki Tou-ko-lan ky-lää. Sen lä-hei-sin ym-pä-ris-tö on ki-vi-nen
+    tan-ner, mut-ta alem-pa-na al-kaa pel-lot, jois-sa, en-nen-kuin ta-lo oli hä-vi-öön
+    men-nyt, aal-toi-li te-räi-nen vil-ja.</p>
+    </body>
+    </html>
 
 ``` python
 pat, ex = read_patterns(open('patterns/hyphen.tex').readlines())
