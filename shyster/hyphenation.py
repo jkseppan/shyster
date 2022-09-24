@@ -25,7 +25,9 @@ def hyphenator(
     regex: re.Pattern,  # first return value from `pattern.convert_patterns`
     mapping: Mapping[str, str],  # second return value from `pattern.convert_patterns`
     exceptions: Mapping[str, str],  # return value from `pattern.convert_exceptions`
-    hyphen: str='-'  # hyphen character
+    hyphen: str='-', # hyphen character
+    lefthyphenmin: int=2,  # at least this many characters before the first hyphen
+    righthyphenmin: int=3,  # at least this many characters after the last hyphen
 ) -> Callable[[str], str]:  # function that hyphenates words
     def fun(word):
         if (result := exceptions.get(word)):
@@ -38,5 +40,7 @@ def hyphenator(
             rule = mapping[key]
             for i, w in enumerate(rule):
                 weights[pos+i] = max(weights[pos+i], w)
-        return add_hyphens(word[1:-1], (i for (i,w) in enumerate(weights) if w&1==1), hyphen=hyphen)
+        positions = (i for (i,w) in enumerate(weights)
+                     if w&1==1 and i>=lefthyphenmin and i<=len(word)-2-righthyphenmin)
+        return add_hyphens(word[1:-1], positions, hyphen=hyphen)
     return fun
