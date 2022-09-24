@@ -13,7 +13,7 @@ import bs4
 from collections.abc import Callable, Set
 from typing import Type
 
-# %% ../04_main.ipynb 4
+# %% ../04_main.ipynb 5
 def hyphenate_html_file(
     html_filename: str,  # to be read
     output_filename: str,  # to be written

@@ -33,7 +33,6 @@ def hyphenate_soup(
     for t in soup.find_all(string=True):
         if isinstance(t, exclude_classes):
             continue
-        print(type(t), t.string)
         pieces = re.findall(word_or_punct_re, str(t.string))
         for i, word in enumerate(pieces):
             if not word_re.fullmatch(word):

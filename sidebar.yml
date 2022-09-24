@@ -1,0 +1,16 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - 00_file.ipynb
+      - 01_pattern.ipynb
+      - 02_hyphenation.ipynb
+      - 03_html.ipynb
+      - 04_main.ipynb
+      - LICENSE
+      - MANIFEST.in
+      - README.md
+      - nbdev.yml
+      - settings.ini
+      - setup.py
+      - styles.css
