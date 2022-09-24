@@ -21,8 +21,9 @@ pip install https://github.com/jkseppan/shyster/
 
 Fill me in please! Don’t forget code examples:
 
-``` python
-1+1
-```
-
-    2
+    from .file import read_patterns
+    from .pattern import convert_patterns
+    from .hyphenation import hyphenator
+    pp, ex = read_patterns(open('/Users/jks/Downloads/hyph-fi.tex').readlines())
+    ppr, ppm = convert_patterns(pp)
+    ex = convert_exceptions(ex)
