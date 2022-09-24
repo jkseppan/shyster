@@ -4,7 +4,14 @@
 __all__ = ['convert_patterns', 'convert_exceptions']
 
 # %% ../01_pattern.ipynb 3
-def _cvt(pattern):
+import re, string
+import itertools as it
+from collections.abc import Iterable, Mapping
+
+# %% ../01_pattern.ipynb 5
+def _cvt(
+    pattern: str  # pattern as read from the TeX patterns file
+) -> tuple[int, ...]:  # position i has the weight of the slot before character i
     res = [0 for _ in pattern]
     pos = 0
     for ch in pattern:
@@ -14,8 +21,10 @@ def _cvt(pattern):
             pos += 1
     return tuple(res[:pos+1])
 
-# %% ../01_pattern.ipynb 4
-def convert_patterns(patterns):
+# %% ../01_pattern.ipynb 7
+def convert_patterns(
+    patterns: Iterable[str]  # patterns as read from the TeX patterns file
+) -> tuple[re.Pattern, Mapping[str, tuple[int, ...]]]:  # regex for patterns, and mapping from pattern to weights
     regexes = []
     mapping = {}
     for p in patterns:
@@ -26,6 +35,8 @@ def convert_patterns(patterns):
         mapping[s] = _cvt(p)
     return re.compile(f"(?=({'|'.join(regexes)}))"), mapping
 
-# %% ../01_pattern.ipynb 6
-def convert_exceptions(exceptions):
+# %% ../01_pattern.ipynb 11
+def convert_exceptions(
+    exceptions: Iterable[str]
+) -> Mapping[str, str]:  # mapping from word to word with hyphens
     return {w.replace('-', ''): w for w in exceptions}

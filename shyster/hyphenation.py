@@ -4,15 +4,29 @@
 __all__ = ['hyphenator']
 
 # %% ../02_hyphenation.ipynb 3
-def add_hyphens(s, positions, hyphen='-'):
+import re
+import itertools as it
+from collections.abc import Sequence, Mapping, Callable
+
+# %% ../02_hyphenation.ipynb 5
+def add_hyphens(
+    s: str,  # word to hyphenate
+    positions: Sequence[int],  # positions to insert hyphens (increasing order)
+    hyphen: str='-'  # hyphen character
+) -> str:  # word with hyphens
     i0, i1 = it.tee(iter(positions))
     i0 = it.chain((0,), i0)
     i1 = it.chain(i1, (len(s),))
     substrings = (s[p0:p1] for (p0,p1) in zip(i0, i1))
     return hyphen.join(substrings).strip(hyphen)
 
-# %% ../02_hyphenation.ipynb 5
-def hyphenator(regex, mapping, exceptions, hyphen='-'):
+# %% ../02_hyphenation.ipynb 9
+def hyphenator(
+    regex: re.Pattern,  # first return value from `pattern.convert_patterns`
+    mapping: Mapping[str, str],  # second return value from `pattern.convert_patterns`
+    exceptions: Mapping[str, str],  # return value from `pattern.convert_exceptions`
+    hyphen: str='-'  # hyphen character
+) -> Callable[[str], str]:  # function that hyphenates words
     def fun(word):
         if (result := exceptions.get(word)):
             return result

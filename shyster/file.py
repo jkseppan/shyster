@@ -4,7 +4,15 @@
 __all__ = ['read_patterns']
 
 # %% ../00_file.ipynb 3
-def read_patterns(lines):
+from collections.abc import Iterable, Sequence
+import re
+
+# %% ../00_file.ipynb 5
+def read_patterns(
+    lines: Iterable[str] # e.g. open('hyph-fi.tex').readlines()
+) -> tuple[Sequence[str], Sequence[str]]: # patterns and exceptions
+    """Read a TeX hyphenation pattern file; not a complete parser but hopefully enough
+    for hyph-*.tex"""
     comment = re.compile(r' *%.*')
     state = 0
     patterns = []
