@@ -78,15 +78,14 @@ print(str(soup))
 
 ``` python
 pat, ex = read_patterns(open('patterns/hyphen.tex').readlines())
-pat_re, pat_map = convert_patterns(pat)
+trie = convert_patterns(pat)
 ex = convert_exceptions(ex)
 del ex['present'] # remove an exception
 ex['shyster'] = ('shy', 'ster')  # add or alter an exception
 ex['lawyer'] = ('l', 'a', 'w', 'y', 'e', 'r')  # exceptions even override {left,right}hyphenmin
 
 hyph_en = hyphenator(None, hyphen='•')
-hyph_en.regex = pat_re
-hyph_en.mapping = pat_map
+hyph_en.trie = trie
 hyph_en.exceptions = ex
 
 import textwrap
@@ -97,7 +96,7 @@ shyster: noun; 1. someone, possibly a lawyer, who behaves in an unscrupulous way
 ''')))
 ```
 
-    ['shy•ster noun 1 some•one possi•bly a l•a•w•y•e•r who be•haves in an',
+    ['shy•ster noun 1 some•one pos•si•bly a l•a•w•y•e•r who be•haves in an',
      'un•scrupu•lous way 2 the pre•sent Python li•brary']
 
 ## Copying

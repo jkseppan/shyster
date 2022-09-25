@@ -4,7 +4,7 @@
 __all__ = ['hyphenator']
 
 # %% ../02_hyphenation.ipynb 3
-import regex
+import datrie  # type: ignore
 import itertools as it
 from collections.abc import Sequence, Mapping, Iterable
 from shyster.file import read_patterns
@@ -26,10 +26,9 @@ def add_hyphens(
 # %% ../02_hyphenation.ipynb 9
 class hyphenator:
     """Hyphenates words"""
-    __slots__ = ('regex', 'mapping', 'exceptions', 'hyphen', 'lefthyphenmin', 'righthyphenmin')
-    regex: regex.Pattern  # first return value from `pattern.convert_patterns`
-    mapping: Mapping[str, tuple[int,...]]  # second return value from `pattern.convert_patterns`
-    exceptions: Mapping[str, tuple[str,...]]  # return value from `pattern.convert_exceptions`
+    __slots__ = ('trie', 'exceptions', 'hyphen', 'lefthyphenmin', 'righthyphenmin')
+    trie: datrie.Trie  # the patterns from `convert_patterns`
+    exceptions: dict[str, tuple[str,...]]  # return value from `pattern.convert_exceptions`
     hyphen: str  # hyphen character
     lefthyphenmin: int  # at least this many characters before the first hyphen
     righthyphenmin: int  # at least this many characters after the last hyphen
@@ -46,8 +45,7 @@ class hyphenator:
     ):
         if initializer is None:
             # the user will set these up explicitly
-            self.regex = regex.compile('')
-            self.mapping = {}
+            self.trie = datrie.Trie('')
             self.exceptions = {}
         else:
             f = None
@@ -61,8 +59,8 @@ class hyphenator:
             pat, exc = read_patterns(it)
             if f:
                 f.close()
-            self.regex, self.mapping = convert_patterns(pat)
-            self.exceptions = convert_exceptions(exc)
+            self.trie = convert_patterns(pat)
+            self.exceptions = dict(convert_exceptions(exc))
             
         self.hyphen = hyphen
         self.lefthyphenmin = lefthyphenmin
@@ -76,7 +74,7 @@ class hyphenator:
         word: str,  # word to add, possibly with `-` characters to indicate hyphenation points
         split: tuple[str,...] | None,  # how to split the word, or None to split at `-` characters
     ):
-        if split is not None:
+        if split is None:
             self.exceptions.update(convert_exceptions([word]))
         else:
             self.exceptions[word] = split
@@ -92,12 +90,10 @@ class hyphenator:
             return self.hyphen.join(result)
         word = f'\x1f{word}\x1f'
         weights = bytearray(len(word))
-        for match in self.regex.finditer(word, overlapped=True):
-            pos = match.span()[0]-1
-            key = match.group(1)
-            rule = self.mapping[key]
-            for i, w in enumerate(rule):
-                weights[pos+i] = max(weights[pos+i], w)
+        for pos in range(len(word)-1):
+            for rule in self.trie.iter_prefix_values(word[pos:]):
+                for i, w in enumerate(rule):
+                    weights[pos+i-1] = max(weights[pos+i-1], w)
         positions = [i for (i,w) in enumerate(weights)
                      if w&1==1 and i>=self.lefthyphenmin and i<=len(word)-2-self.righthyphenmin]
         return add_hyphens(word[1:-1], positions, hyphen=self.hyphen)

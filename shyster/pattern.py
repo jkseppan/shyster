@@ -4,9 +4,10 @@
 __all__ = ['convert_patterns', 'convert_exceptions']
 
 # %% ../01_pattern.ipynb 3
-import regex, string
+import string, re
 import itertools as it
 from collections.abc import Iterable, Mapping
+import datrie  # type: ignore
 
 # %% ../01_pattern.ipynb 5
 def _cvt(
@@ -23,17 +24,15 @@ def _cvt(
 
 # %% ../01_pattern.ipynb 8
 def convert_patterns(
-    patterns: Iterable[str]  # patterns as read from the TeX patterns file
-) -> tuple[regex.Pattern, Mapping[str, tuple[int, ...]]]:  # regex for patterns, and mapping from pattern to weights
-    regexes = []
-    mapping = {}
-    for p in patterns:
-        # replace dot with a control character unlikely to appear in words (ASCII unit separator)
-        p = p.replace('.', '\x1f')
-        s = regex.sub('[0-9]', '', p)
-        regexes.append(s)
-        mapping[s] = _cvt(p)
-    return regex.compile(f"(?V1)(?=({'|'.join(regexes)}))"), mapping
+    patterns: Iterable[str]  # TeX style patterns
+) -> datrie.Trie:  # trie mapping matched substrings to weights
+    patterns = list(patterns)
+    alphabet = set(it.chain.from_iterable(patterns)) - set(string.digits) | {'\x1F'}
+    trie = datrie.Trie(alphabet)
+    for pat in patterns:
+        pat = pat.replace('.', '\x1f')
+        trie[re.sub('[0-9]', '', pat)] = _cvt(pat)
+    return trie
 
 # %% ../01_pattern.ipynb 12
 def convert_exceptions(
