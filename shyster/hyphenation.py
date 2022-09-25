@@ -4,7 +4,7 @@
 __all__ = ['hyphenator']
 
 # %% ../02_hyphenation.ipynb 3
-import re
+import regex
 import itertools as it
 from collections.abc import Sequence, Mapping, Iterable
 from shyster.file import read_patterns
@@ -27,7 +27,7 @@ def add_hyphens(
 class hyphenator:
     """Hyphenates words"""
     __slots__ = ('regex', 'mapping', 'exceptions', 'hyphen', 'lefthyphenmin', 'righthyphenmin')
-    regex: re.Pattern  # first return value from `pattern.convert_patterns`
+    regex: regex.Pattern  # first return value from `pattern.convert_patterns`
     mapping: Mapping[str, tuple[int,...]]  # second return value from `pattern.convert_patterns`
     exceptions: Mapping[str, tuple[str,...]]  # return value from `pattern.convert_exceptions`
     hyphen: str  # hyphen character
@@ -46,7 +46,7 @@ class hyphenator:
     ):
         if initializer is None:
             # the user will set these up explicitly
-            self.regex = re.compile('')
+            self.regex = regex.compile('')
             self.mapping = {}
             self.exceptions = {}
         else:
@@ -92,7 +92,7 @@ class hyphenator:
             return self.hyphen.join(result)
         word = f'\x1f{word}\x1f'
         weights = bytearray(len(word))
-        for match in self.regex.finditer(word):
+        for match in self.regex.finditer(word, overlapped=True):
             pos = match.span()[0]-1
             key = match.group(1)
             rule = self.mapping[key]

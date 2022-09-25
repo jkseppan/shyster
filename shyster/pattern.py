@@ -4,7 +4,7 @@
 __all__ = ['convert_patterns', 'convert_exceptions']
 
 # %% ../01_pattern.ipynb 3
-import re, string
+import regex, string
 import itertools as it
 from collections.abc import Iterable, Mapping
 
@@ -24,16 +24,16 @@ def _cvt(
 # %% ../01_pattern.ipynb 8
 def convert_patterns(
     patterns: Iterable[str]  # patterns as read from the TeX patterns file
-) -> tuple[re.Pattern, Mapping[str, tuple[int, ...]]]:  # regex for patterns, and mapping from pattern to weights
+) -> tuple[regex.Pattern, Mapping[str, tuple[int, ...]]]:  # regex for patterns, and mapping from pattern to weights
     regexes = []
     mapping = {}
     for p in patterns:
         # replace dot with a control character unlikely to appear in words (ASCII unit separator)
         p = p.replace('.', '\x1f')
-        s = re.sub('[0-9]', '', p)
+        s = regex.sub('[0-9]', '', p)
         regexes.append(s)
         mapping[s] = _cvt(p)
-    return re.compile(f"(?=({'|'.join(regexes)}))"), mapping
+    return regex.compile(f"(?V1)(?=({'|'.join(regexes)}))"), mapping
 
 # %% ../01_pattern.ipynb 12
 def convert_exceptions(
