@@ -26,12 +26,13 @@ def _cvt(
 def convert_patterns(
     patterns: Iterable[str]  # TeX style patterns
 ) -> datrie.Trie:  # trie mapping matched substrings to weights
-    patterns = list(patterns)
+    num = re.compile('[0-9]')
+    patterns = sorted(patterns, key=lambda x: num.sub('', x))
     alphabet = set(it.chain.from_iterable(patterns)) - set(string.digits) | {'\x1F'}
     trie = datrie.Trie(alphabet)
     for pat in patterns:
         pat = pat.replace('.', '\x1f')
-        trie[re.sub('[0-9]', '', pat)] = _cvt(pat)
+        trie[num.sub('', pat)] = _cvt(pat)
     return trie
 
 # %% ../01_pattern.ipynb 12
