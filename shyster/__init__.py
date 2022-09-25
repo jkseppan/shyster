@@ -1,1 +1,2 @@
+__version__ = "0.0.2"
 from .main import hyphenate_html_file
