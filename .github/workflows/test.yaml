@@ -5,7 +5,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: jpetrucciani/mypy-check@0.971
-      with:
-        path: shyster
     - uses: fastai/workflows/nbdev-ci@master
+    - run: |
+        python3 -m pip install mypy==0.971
+        mypy
