@@ -24,10 +24,7 @@ def hyphenate_html_file(
     exclude_classes: tuple[Type[bs4.element.PageElement],...]=()  # exclude these bs4 elements (empty to use default)
 ) -> None:
     """Read html_filename and output output_filename, inserting hyphens in words."""
-    pat, exc = read_patterns(open(patterns_filename).readlines())
-    re, mp = convert_patterns(pat)
-    ex = convert_exceptions(exc)
-    hyph = hyphenator(re, mp, ex, hyphen=hyphen, lefthyphenmin=lefthyphenmin, righthyphenmin=righthyphenmin)
+    hyph = hyphenator(patterns_filename, hyphen=hyphen, lefthyphenmin=lefthyphenmin, righthyphenmin=righthyphenmin)
     with open(html_filename, 'rt') as f:
         soup = bs4.BeautifulSoup(f, 'lxml')
     kwargs = {'exclude_classes': exclude_classes} if exclude_classes else {}

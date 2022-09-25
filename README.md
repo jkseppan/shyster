@@ -14,7 +14,7 @@ spots.
 ## Install
 
 ``` sh
-pip install https://github.com/jkseppan/shyster/
+pip install shyster
 ```
 
 ## How to use
@@ -29,12 +29,9 @@ shyster.hyphenate_html_file('input.html', 'output.html', 'patterns/hyphen.tex')
 If more control is needed:
 
 ``` python
-pat, ex = read_patterns(open('patterns/hyph-fi.tex').readlines())
-pat_re, pat_map = convert_patterns(pat)
-ex = convert_exceptions(ex)
-hyph = hyphenator(pat_re, pat_map, ex, righthyphenmin=2)
+hyph_fi = hyphenator('patterns/hyph-fi.tex', righthyphenmin=2)
 
-[hyph(word) for word in 
+[hyph_fi(word) for word in 
  'Jukolan talo, eteläisessä Hämeessä, seisoo erään mäen pohjaisella rinteellä, liki Toukolan kylää'\
  .replace(',','').split()]
 ```
@@ -64,8 +61,7 @@ mennyt, aaltoili teräinen vilja.</p>
 </body>
 """
 soup = BeautifulSoup(html, 'lxml')
-hyph = hyphenator(pat_re, pat_map, ex, righthyphenmin=2)
-hyphenate_soup(soup, hyph)
+hyphenate_soup(soup, hyph_fi)
 print(str(soup))
 ```
 
@@ -84,17 +80,25 @@ print(str(soup))
 pat, ex = read_patterns(open('patterns/hyphen.tex').readlines())
 pat_re, pat_map = convert_patterns(pat)
 ex = convert_exceptions(ex)
-hyph = hyphenator(pat_re, pat_map, ex)
+del ex['present'] # remove an exception
+ex['shyster'] = 'shy-ster'  # add or alter an exception
+ex['lawyer'] = 'l-a-w-y-e-r'  # exceptions even override {left,right}hyphenmin
+
+hyph_en = hyphenator(None, hyphen='•')
+hyph_en.regex = pat_re
+hyph_en.mapping = pat_map
+hyph_en.exceptions = ex
 
 import textwrap
-textwrap.wrap(' '.join(hyph(word) for word in '''
-It is a truth universally acknowledged, that a single man in possession of a good fortune,
-must be in want of a wife.
-'''.replace(',','').replace('.','').split()))
+textwrap.wrap(' '.join(hyph_en(match.group(0)) 
+                       for match in re.finditer(r'[\w]+', '''
+shyster: noun; 1. someone, possibly a lawyer, who behaves in an unscrupulous way;
+2. the present Python library
+''')))
 ```
 
-    ['It is a truth univer-sally ac-knowl-edged that a single man in posses-',
-     'sion of a good for-tune must be in want of a wife']
+    ['shy•ster noun 1 some•one possi•bly a l•a•w•y•e•r who be•haves in an',
+     'un•scrupu•lous way 2 the pre•sent Python li•brary']
 
 ## Copying
 
@@ -111,8 +115,8 @@ Public License for more details.
 You should have received a copy of the GNU General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>.
 
-The files in `patterns/` are distributed with this program as example
-input files. The Finnish patterns are covered by the terms “Patterns may
-be freely distributed” and the English ones by “Unlimited copying and
-redistribution of this file are permitted as long as this file is not
-modified.”
+The above does not apply to the files in `patterns/`, which are
+distributed with this program as example input files. The Finnish
+patterns are covered by the terms “Patterns may be freely distributed”
+and the English ones by “Unlimited copying and redistribution of this
+file are permitted as long as this file is not modified.”

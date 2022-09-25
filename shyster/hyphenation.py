@@ -6,7 +6,10 @@ __all__ = ['hyphenator']
 # %% ../02_hyphenation.ipynb 3
 import re
 import itertools as it
-from collections.abc import Sequence, Mapping, Callable
+from collections.abc import Sequence, Mapping, Iterable
+from shyster.file import read_patterns
+from shyster.pattern import convert_patterns, convert_exceptions
+from pathlib import Path
 
 # %% ../02_hyphenation.ipynb 5
 def add_hyphens(
@@ -21,26 +24,65 @@ def add_hyphens(
     return hyphen.join(substrings).strip(hyphen)
 
 # %% ../02_hyphenation.ipynb 9
-def hyphenator(
-    regex: re.Pattern,  # first return value from `pattern.convert_patterns`
-    mapping: Mapping[str, tuple[int,...]],  # second return value from `pattern.convert_patterns`
-    exceptions: Mapping[str, str],  # return value from `pattern.convert_exceptions`
-    hyphen: str='-', # hyphen character
-    lefthyphenmin: int=2,  # at least this many characters before the first hyphen
-    righthyphenmin: int=3,  # at least this many characters after the last hyphen
-) -> Callable[[str], str]:  # function that hyphenates words
-    def fun(word):
-        if (result := exceptions.get(word)):
-            return result
+class hyphenator:
+    """Hyphenates words"""
+    __slots__ = ('regex', 'mapping', 'exceptions', 'hyphen', 'lefthyphenmin', 'righthyphenmin')
+    regex: re.Pattern  # first return value from `pattern.convert_patterns`
+    mapping: Mapping[str, tuple[int,...]]  # second return value from `pattern.convert_patterns`
+    exceptions: Mapping[str, str]  # return value from `pattern.convert_exceptions`
+    hyphen: str  # hyphen character
+    lefthyphenmin: int  # at least this many characters before the first hyphen
+    righthyphenmin: int  # at least this many characters after the last hyphen
+
+    def __init__(
+        self,
+        initializer: (str   # filename of hyphen.tex, or an iterable of its lines, or None
+                      | Path
+                      | Iterable[str]
+                      | None),
+        hyphen: str='-',
+        lefthyphenmin: int=2,
+        righthyphenmin: int=3,
+    ):
+        if initializer is None:
+            # the user will set these up explicitly
+            self.regex = re.compile('')
+            self.mapping = {}
+            self.exceptions = {}
+        else:
+            f = None
+            if isinstance(initializer, (str, Path)):
+                f = open(initializer, 'rt')
+                it = f.readlines()
+            elif isinstance(initializer, Iterable):
+                it = initializer
+            else:
+                raise TypeError(f"don't know how to use {type(initializer)}")
+            pat, exc = read_patterns(it)
+            if f:
+                f.close()
+            self.regex, self.mapping = convert_patterns(pat)
+            self.exceptions = convert_exceptions(exc)
+            
+        self.hyphen = hyphen
+        self.lefthyphenmin = lefthyphenmin
+        self.righthyphenmin = righthyphenmin
+    
+    def __call__(self, word: str):
+        return self.hyphenate(word)
+        
+    def hyphenate(self, word: str) -> str:
+        if (result := self.exceptions.get(word)):
+            return result.replace('-', self.hyphen)
         word = f'\x1f{word}\x1f'
         weights = bytearray(len(word))
-        for match in regex.finditer(word):
+        for match in self.regex.finditer(word):
             pos = match.span()[0]-1
             key = match.group(1)
-            rule = mapping[key]
+            rule = self.mapping[key]
             for i, w in enumerate(rule):
                 weights[pos+i] = max(weights[pos+i], w)
         positions = (i for (i,w) in enumerate(weights)
-                     if w&1==1 and i>=lefthyphenmin and i<=len(word)-2-righthyphenmin)
-        return add_hyphens(word[1:-1], positions, hyphen=hyphen)
-    return fun
+                     if w&1==1 and i>=self.lefthyphenmin and i<=len(word)-2-self.righthyphenmin)
+        return add_hyphens(word[1:-1], positions, hyphen=self.hyphen)
+
