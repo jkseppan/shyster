@@ -38,5 +38,5 @@ def convert_patterns(
 # %% ../01_pattern.ipynb 12
 def convert_exceptions(
     exceptions: Iterable[str]
-) -> Mapping[str, str]:  # mapping from word to word with hyphens
-    return {w.replace('-', ''): w for w in exceptions}
+) -> Mapping[str, tuple[str,...]]:  # mapping from word to word parts
+    return {w.replace('-', ''): tuple(w.split('-')) for w in exceptions}

@@ -81,8 +81,8 @@ pat, ex = read_patterns(open('patterns/hyphen.tex').readlines())
 pat_re, pat_map = convert_patterns(pat)
 ex = convert_exceptions(ex)
 del ex['present'] # remove an exception
-ex['shyster'] = 'shy-ster'  # add or alter an exception
-ex['lawyer'] = 'l-a-w-y-e-r'  # exceptions even override {left,right}hyphenmin
+ex['shyster'] = ('shy', 'ster')  # add or alter an exception
+ex['lawyer'] = ('l', 'a', 'w', 'y', 'e', 'r')  # exceptions even override {left,right}hyphenmin
 
 hyph_en = hyphenator(None, hyphen='•')
 hyph_en.regex = pat_re

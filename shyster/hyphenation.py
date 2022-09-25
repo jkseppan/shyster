@@ -29,7 +29,7 @@ class hyphenator:
     __slots__ = ('regex', 'mapping', 'exceptions', 'hyphen', 'lefthyphenmin', 'righthyphenmin')
     regex: re.Pattern  # first return value from `pattern.convert_patterns`
     mapping: Mapping[str, tuple[int,...]]  # second return value from `pattern.convert_patterns`
-    exceptions: Mapping[str, str]  # return value from `pattern.convert_exceptions`
+    exceptions: Mapping[str, tuple[str,...]]  # return value from `pattern.convert_exceptions`
     hyphen: str  # hyphen character
     lefthyphenmin: int  # at least this many characters before the first hyphen
     righthyphenmin: int  # at least this many characters after the last hyphen
@@ -53,7 +53,7 @@ class hyphenator:
             f = None
             if isinstance(initializer, (str, Path)):
                 f = open(initializer, 'rt')
-                it = f.readlines()
+                it: Iterable[str] = f.readlines()
             elif isinstance(initializer, Iterable):
                 it = initializer
             else:
@@ -73,7 +73,7 @@ class hyphenator:
         
     def hyphenate(self, word: str) -> str:
         if (result := self.exceptions.get(word)):
-            return result.replace('-', self.hyphen)
+            return self.hyphen.join(result)
         word = f'\x1f{word}\x1f'
         weights = bytearray(len(word))
         for match in self.regex.finditer(word):
@@ -82,7 +82,7 @@ class hyphenator:
             rule = self.mapping[key]
             for i, w in enumerate(rule):
                 weights[pos+i] = max(weights[pos+i], w)
-        positions = (i for (i,w) in enumerate(weights)
-                     if w&1==1 and i>=self.lefthyphenmin and i<=len(word)-2-self.righthyphenmin)
+        positions = [i for (i,w) in enumerate(weights)
+                     if w&1==1 and i>=self.lefthyphenmin and i<=len(word)-2-self.righthyphenmin]
         return add_hyphens(word[1:-1], positions, hyphen=self.hyphen)
 
