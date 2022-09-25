@@ -70,6 +70,22 @@ class hyphenator:
     
     def __call__(self, word: str):
         return self.hyphenate(word)
+    
+    def add_exception(
+        self,
+        word: str,  # word to add, possibly with `-` characters to indicate hyphenation points
+        split: tuple[str,...] | None,  # how to split the word, or None to split at `-` characters
+    ):
+        if split is not None:
+            self.exceptions.update(convert_exceptions([word]))
+        else:
+            self.exceptions[word] = split
+    
+    def rm_exception(
+        self,
+        word: str  # word to make unexceptional, without hyphens
+    ):
+        del self.exceptions[word]
         
     def hyphenate(self, word: str) -> str:
         if (result := self.exceptions.get(word)):
