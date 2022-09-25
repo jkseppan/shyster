@@ -3,15 +3,16 @@
 # %% auto 0
 __all__ = ['hyphenator']
 
-# %% ../02_hyphenation.ipynb 3
+# %% ../02_hyphenation.ipynb 4
 import datrie  # type: ignore
 import itertools as it
+import string
 from collections.abc import Sequence, Mapping, Iterable
 from shyster.file import read_patterns
 from shyster.pattern import convert_patterns, convert_exceptions
 from pathlib import Path
 
-# %% ../02_hyphenation.ipynb 5
+# %% ../02_hyphenation.ipynb 6
 def add_hyphens(
     s: str,  # word to hyphenate
     positions: Sequence[int],  # positions to insert hyphens (increasing order)
@@ -23,15 +24,17 @@ def add_hyphens(
     substrings = (s[p0:p1] for (p0,p1) in zip(i0, i1))
     return hyphen.join(substrings).strip(hyphen)
 
-# %% ../02_hyphenation.ipynb 9
+# %% ../02_hyphenation.ipynb 10
 class hyphenator:
     """Hyphenates words"""
-    __slots__ = ('trie', 'exceptions', 'hyphen', 'lefthyphenmin', 'righthyphenmin')
+    __slots__ = ('trie', 'exceptions', 'prefix_exceptions', 'hyphen', 'lefthyphenmin', 'righthyphenmin', 'alphabet')
     trie: datrie.Trie  # the patterns from `convert_patterns`
     exceptions: dict[str, tuple[str,...]]  # return value from `pattern.convert_exceptions`
+    prefix_exceptions: datrie.Trie  # prefix exceptions (not in TeX hyphenation patterns)
     hyphen: str  # hyphen character
     lefthyphenmin: int  # at least this many characters before the first hyphen
     righthyphenmin: int  # at least this many characters after the last hyphen
+    alphabet: str  # what characters can appear in exceptions
 
     def __init__(
         self,
@@ -42,6 +45,7 @@ class hyphenator:
         hyphen: str='-',
         lefthyphenmin: int=2,
         righthyphenmin: int=3,
+        alphabet: str|None=None,  # alphabet; None for ASCII default
     ):
         if initializer is None:
             # the user will set these up explicitly
@@ -65,6 +69,10 @@ class hyphenator:
         self.hyphen = hyphen
         self.lefthyphenmin = lefthyphenmin
         self.righthyphenmin = righthyphenmin
+        if alphabet is None:
+            alphabet = string.ascii_letters
+        self.alphabet = alphabet + '\x1F'
+        self.prefix_exceptions = datrie.Trie(self.alphabet)
     
     def __call__(self, word: str):
         return self.hyphenate(word)
@@ -72,12 +80,23 @@ class hyphenator:
     def add_exception(
         self,
         word: str,  # word to add, possibly with `-` characters to indicate hyphenation points
-        split: tuple[str,...] | None,  # how to split the word, or None to split at `-` characters
+        split: tuple[str,...] | None=None,  # how to split the word, or None to split at `-` characters
     ):
         if split is None:
             self.exceptions.update(convert_exceptions([word]))
         else:
             self.exceptions[word] = split
+    
+    def add_prefix_exception(
+        self,
+        prefix: str,
+        split: tuple[str,...] | None=None,
+    ):
+        if split is None:
+            (key, value), = convert_exceptions([prefix]).items()
+            self.prefix_exceptions[key] = value
+        else:
+            self.prefix_exceptions[prefix] = split
     
     def rm_exception(
         self,
@@ -85,9 +104,19 @@ class hyphenator:
     ):
         del self.exceptions[word]
         
+    def rm_prefix_exception(
+        self,
+        prefix: str  # prefix to make unexceptional, without hyphens
+    ):
+        if self.prefix_exceptions is not None:
+            del self.prefix_exceptions[prefix]
+        
     def hyphenate(self, word: str) -> str:
         if (result := self.exceptions.get(word)):
             return self.hyphen.join(result)
+        if (item := self.prefix_exceptions.longest_prefix_item(word, default=None)) is not None:
+            prefix, value = item
+            return self.hyphen.join(value) + word[len(prefix):]
         word = f'\x1f{word}\x1f'
         weights = bytearray(len(word))
         for pos in range(len(word)-1):
