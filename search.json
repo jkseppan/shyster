@@ -1,0 +1,100 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "shyster",
+    "section": "",
+    "text": "The problem this package is trying to solve is that while I can set hyphens: auto; in CSS, many browsers do a poor job of hyphenating Finnish. Even if they have Finnish hyphenation patterns, they often fail to recognise compound words, which should be hyphenated at compound boundaries (saippua-kauppias, not saip-pua-kaup-pias). One solution is to set hyphens: manual; and add soft hyphens at acceptable hyphenation spots."
+  },
+  {
+    "objectID": "index.html#install",
+    "href": "index.html#install",
+    "title": "shyster",
+    "section": "Install",
+    "text": "Install\npip install shyster"
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "shyster",
+    "section": "How to use",
+    "text": "How to use\nOne top-level function does it all:\n\nimport shyster\nshyster.hyphenate_html_file('input.html', 'output.html', 'patterns/hyphen.tex')\n\nIf more control is needed:\n\nhyph_fi = hyphenator('patterns/hyph-fi.tex', righthyphenmin=2)\n\n[hyph_fi(word) for word in \n 'Jukolan talo, eteläisessä Hämeessä, seisoo erään mäen pohjaisella rinteellä, liki Toukolan kylää'\\\n .replace(',','').split()]\n\n['Ju-ko-lan',\n 'ta-lo',\n 'ete-läi-ses-sä',\n 'Hä-mees-sä',\n 'sei-soo',\n 'erään',\n 'mäen',\n 'poh-jai-sel-la',\n 'rin-teel-lä',\n 'li-ki',\n 'Tou-ko-lan',\n 'ky-lää']\n\n\n\nhtml = \"\"\"\n<!doctype html><title>Seitsemän veljestä</title>\n<script>var veljekset = 7;</script>\n<body>\n<p style=\"margin-top: 2em\">Jukolan talo, eteläisessä Hämeessä, seisoo erään mäen pohjaisella\nrinteellä, liki Toukolan kylää. Sen läheisin ympäristö on kivinen\ntanner, mutta alempana alkaa pellot, joissa, ennenkuin talo oli häviöön\nmennyt, aaltoili teräinen vilja.</p>\n</body>\n\"\"\"\nsoup = BeautifulSoup(html, 'lxml')\nhyphenate_soup(soup, hyph_fi)\nprint(str(soup))\n\n<!DOCTYPE html>\n<html><head><title>Seit-se-män vel-jes-tä</title>\n<script>var veljekset = 7;</script>\n</head><body>\n<p style=\"margin-top: 2em\">Ju-ko-lan ta-lo, ete-läi-ses-sä Hä-mees-sä, sei-soo erään mäen poh-jai-sel-la\nrin-teel-lä, li-ki Tou-ko-lan ky-lää. Sen lä-hei-sin ym-pä-ris-tö on ki-vi-nen\ntan-ner, mut-ta alem-pa-na al-kaa pel-lot, jois-sa, en-nen-kuin ta-lo oli hä-vi-öön\nmen-nyt, aal-toi-li te-räi-nen vil-ja.</p>\n</body>\n</html>\n\n\n\npat, ex = read_patterns(open('patterns/hyphen.tex').readlines())\ntrie = convert_patterns(pat)\nex = convert_exceptions(ex)\ndel ex['present'] # remove an exception\nex['shyster'] = ('shy', 'ster')  # add or alter an exception\nex['lawyer'] = ('l', 'a', 'w', 'y', 'e', 'r')  # exceptions even override {left,right}hyphenmin\n\nhyph_en = hyphenator(None, hyphen='•')\nhyph_en.trie = trie\nhyph_en.exceptions = ex\n\nimport textwrap\ntextwrap.wrap(' '.join(hyph_en(match.group(0)) \n                       for match in re.finditer(r'[\\w]+', '''\nshyster: noun; 1. someone, possibly a lawyer, who behaves in an unscrupulous way;\n2. the present Python library\n''')))\n\n['shy•ster noun 1 some•one pos•si•bly a l•a•w•y•e•r who be•haves in an',\n 'un•scrupu•lous way 2 the pre•sent Python li•brary']"
+  },
+  {
+    "objectID": "index.html#copying",
+    "href": "index.html#copying",
+    "title": "shyster",
+    "section": "Copying",
+    "text": "Copying\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\nYou should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.\nThe above does not apply to the files in patterns/, which are distributed with this program as example input files. The Finnish patterns are covered by the terms “Patterns may be freely distributed” and the English ones by “Unlimited copying and redistribution of this file are permitted as long as this file is not modified.”"
+  },
+  {
+    "objectID": "main.html",
+    "href": "main.html",
+    "title": "04_main",
+    "section": "",
+    "text": "source\n\nhyphenate_html_file\n\n hyphenate_html_file (html_filename:str, output_filename:str,\n                      patterns_filename:str, hyphen:str='\\xad',\n                      lefthyphenmin:int=2, righthyphenmin:int=3, exclude_c\n                      lasses:tuple[typing.Type[bs4.element.PageElement],..\n                      .]=())\n\nRead html_filename and output output_filename, inserting hyphens in words.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nhtml_filename\nstr\n\nto be read\n\n\noutput_filename\nstr\n\nto be written\n\n\npatterns_filename\nstr\n\ne.g. hyphen.tex or hyph-fi.tex\n\n\nhyphen\nstr\n­\nwhat hyphen character to use\n\n\nlefthyphenmin\nint\n2\nat least this many characters before the first hyphen\n\n\nrighthyphenmin\nint\n3\nat least this many characters after the last hyphen\n\n\nexclude_classes\ntuple\n()\nexclude these bs4 elements (empty to use default)\n\n\nReturns\nNone"
+  },
+  {
+    "objectID": "pattern.html",
+    "href": "pattern.html",
+    "title": "01_pattern",
+    "section": "",
+    "text": "a\n\nl\n\ny\n\n\n\n2\n\n1\n\n0\n\n4\n\n\n\nMissing numbers mean zero.\n\nsource\n\n_cvt\n\n _cvt (pattern:str)\n\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\npattern\nstr\npattern as read from the TeX patterns file\n\n\nReturns\ntuple\nposition i has the weight of the slot before character i\n\n\n\nThe following function turns many patterns into one trie.\n\nsource\n\n\nconvert_patterns\n\n convert_patterns (patterns:collections.abc.Iterable[str])\n\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\npatterns\nIterable\nTeX style patterns\n\n\nReturns\nTrie\ntrie mapping matched substrings to weights\n\n\n\n\nt = convert_patterns('''4m1p pu2t 5pute put3er\nl1g4 lgo3 igo 2ith 4hm\nhy3ph he2n hena4 hen5at ina n2at itio 2io'''.split())\ntest_eq(t.prefix_items('puter'), \n       [('put', (0, 0, 2, 0)),\n        ('pute', (5, 0, 0, 0, 0)),\n        ('puter', (0, 0, 0, 3, 0, 0))])\n\nTeX exceptions are simply words with hyphens where hyphenation should happen.\n\nsource\n\n\nconvert_exceptions\n\n convert_exceptions (exceptions:collections.abc.Iterable[str])\n\n\n\n\n\nType\nDetails\n\n\n\n\nexceptions\nIterable\n\n\n\nReturns\nMapping\nmapping from word to word parts\n\n\n\n\nassert convert_exceptions(['saippua-kauppias', 'xyzzy']) == {\n    'saippuakauppias': ('saippua', 'kauppias'), \n    'xyzzy': ('xyzzy',)\n}"
+  },
+  {
+    "objectID": "file.html",
+    "href": "file.html",
+    "title": "00_file",
+    "section": "",
+    "text": "% this is a comment\n\\patterns{\npattern  % could have comments on lines\nanother\nmaybe many words per line}  % that brace ends the patterns\n\\hyphenation{ % and now the exceptions\nword\nanoth-er\n}\n\nassert read_patterns(r'''\n\n\\patterns{\n1ba alous1\n1be % foobar\nch2r}\n\\hyphenation{\nsaippua-kauppias\n}\n'''.splitlines()) == (['1ba', 'alous1', '1be', 'ch2r'], ['saippua-kauppias'])"
+  },
+  {
+    "objectID": "html.html#hyphenate-a-beautiful-soup",
+    "href": "html.html#hyphenate-a-beautiful-soup",
+    "title": "03_html",
+    "section": "hyphenate a beautiful soup",
+    "text": "hyphenate a beautiful soup\n\nsource\n\nhyphenate_soup\n\n hyphenate_soup (soup:bs4.BeautifulSoup,\n                 hyphenator:collections.abc.Callable[[str],str], exclude_c\n                 lasses:tuple[typing.Type[bs4.element.PageElement],...]=(<\n                 class 'bs4.element.PreformattedString'>, <class\n                 'bs4.element.Stylesheet'>, <class 'bs4.element.Script'>,\n                 <class 'bs4.element.RubyTextString'>, <class\n                 'bs4.element.RubyParenthesisString'>))\n\nCall hyphenator on words that appear in suitable elements of soup, and replace the contents of those elements. Suitable elements are those containing text whose class is not (a subclass of something) in exclude_classes.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nsoup\nBeautifulSoup\n\nsoup to be modified\n\n\nhyphenator\nCallable\n\nhyphenator\n\n\nexclude_classes\ntuple\n(<class ‘bs4.element.PreformattedString’>, <class ‘bs4.element.Stylesheet’>, <class ‘bs4.element.Script’>, <class ‘bs4.element.RubyTextString’>, <class ‘bs4.element.RubyParenthesisString’>)\ndo not modify inside these\n\n\nReturns\nNone"
+  },
+  {
+    "objectID": "html.html#soup-analysis",
+    "href": "html.html#soup-analysis",
+    "title": "03_html",
+    "section": "soup analysis",
+    "text": "soup analysis\nThe following function consumes many beautiful soups and counts the words in them. Ways to use it include: - list all the words longer than a threshold and see if they are compounds - list all the frequent words and see if they are hyphenated right - list all the words of low frequency and see if they are typos\n\nsource\n\nanalyze_soups\n\n analyze_soups (dinner:list[bs4.BeautifulSoup],\n                exclude_classes:tuple[typing.Type[bs4.element.PageElement]\n                ,...]=(<class 'bs4.element.PreformattedString'>, <class\n                'bs4.element.Stylesheet'>, <class 'bs4.element.Script'>,\n                <class 'bs4.element.RubyTextString'>, <class\n                'bs4.element.RubyParenthesisString'>))\n\nCount words appearing in all soups.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ndinner\nlist\n\nsoups to be read\n\n\nexclude_classes\ntuple\n(<class ‘bs4.element.PreformattedString’>, <class ‘bs4.element.Stylesheet’>, <class ‘bs4.element.Script’>, <class ‘bs4.element.RubyTextString’>, <class ‘bs4.element.RubyParenthesisString’>)\ndo not look inside these\n\n\nReturns\nCounter\n\n\n\n\n\nIt can be interesting to look at the longest words on some pages, perhaps to check if hyphenation exceptions are needed for them:\n\nsoups = [\n    bs4.BeautifulSoup(r.content, 'lxml')\n    for r in map(requests.get, [\n        'https://en.wikipedia.org/wiki/Syllabification',\n        'https://en.wikipedia.org/wiki/Hyphen'\n    ])\n]\nc = analyze_soups(soups)\n\n\n[(w, c[w]) for w in c.keys() if len(w)>13]\n\n[('syllabification', 19),\n ('conventionally', 2),\n ('correspondence', 1),\n ('implementation', 1),\n ('heterosyllabic', 1),\n ('disambiguation', 2),\n ('prescriptivist', 1),\n ('recommendations', 2),\n ('representatives', 1),\n ('misinterpretable', 1),\n ('misunderstanding', 1),\n ('misinterpreted', 2),\n ('past_participled', 1),\n ('differentiated', 1),\n ('recommendation', 1),\n ('sociolinguistics', 2),\n ('reduplicatives', 1),\n ('implementations', 1),\n ('indistinguishable', 1),\n ('standardization', 1),\n ('reinterpretations', 1),\n ('interpretation', 1),\n ('capitalization', 1),\n ('classifications', 1),\n ('microtypography', 1),\n ('phototypesetting', 1),\n ('classification', 1),\n ('multiplication', 1),\n ('srpskohrvatski', 1),\n ('српскохрватски', 1)]\n\n\nOr the most common words:\n\nc.most_common(20)\n\n[('the', 339),\n ('a', 215),\n ('of', 190),\n ('in', 174),\n ('and', 159),\n ('is', 135),\n ('to', 132),\n ('hyphen', 131),\n ('for', 84),\n ('as', 79),\n ('or', 75),\n ('be', 65),\n ('are', 61),\n ('this', 57),\n ('that', 56),\n ('with', 55),\n ('used', 53),\n ('hyphenation', 46),\n ('hyphens', 45),\n ('word', 41)]"
+  },
+  {
+    "objectID": "CHANGELOG.html",
+    "href": "CHANGELOG.html",
+    "title": "shyster",
+    "section": "",
+    "text": "Find longest words in html document (#6)\n\nTo help build the exception list\n\nSpecify exceptions with wildcards (#4)\n\nBecause of Finnish declension, the compound word saippuakauppias generates saippuakauppiaan, saippuakauppiaiden, saippuakauppiainensa, etc, and I would like to make all of them only break at the compound border. Almost all of the declension happens at the end of the word, so being able to specify saippua-kaupp* as an exception would cover the cases sufficiently.\n\n\n\n\n\n\nShould be case-insensitive (#7)\n\nBut retain case. Probably fine to not hyphenate CamelCase words but Titlecase ones should be hyphenated and the title-casing retained.\n\n\n\n\n\n\n\n\n\nModify the TeX exception patterns with add_exception, rm_exception (#2)\n\n\n\n\n\nThe regex idea didn’t quite work, using tries instead (#3)\n\nGiven the rules pu2t and 5pute, the hyphenator matched only one of them in the word computer.\n\nExceptions always used - and not the specified hyphen character (#1)\n\n\n\n\n\nInitial release; trying out nbdev."
+  },
+  {
+    "objectID": "hyphenation.html",
+    "href": "hyphenation.html",
+    "title": "02_hyphenation",
+    "section": "",
+    "text": "First a simple function to add hyphens at given positions:\n\nsource\n\n\n\n add_hyphens (s:str, positions:collections.abc.Sequence[int],\n              hyphen:str='-')\n\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ns\nstr\n\nword to hyphenate\n\n\npositions\nSequence\n\npositions to insert hyphens (increasing order)\n\n\nhyphen\nstr\n-\nhyphen character\n\n\nReturns\nstr\n\nword with hyphens\n\n\n\n\ntest_eq(add_hyphens('saippuakauppias', ()), 'saippuakauppias')\ntest_eq(add_hyphens('saippuakauppias', (7,)), 'saippua-kauppias')\ntest_eq(add_hyphens('saippuakauppias', (4, 7, 11)), f'saip-pua-kaup-pias')\ntest_eq(add_hyphens('', ()), '')"
+  },
+  {
+    "objectID": "hyphenation.html#liang-hyphenation-algorithm",
+    "href": "hyphenation.html#liang-hyphenation-algorithm",
+    "title": "02_hyphenation",
+    "section": "Liang hyphenation algorithm",
+    "text": "Liang hyphenation algorithm\nThe following function implements the Liang hyphenation algorithm, given the patterns and exceptions. For each possible hyphenation slot, we take the maximum of all weights given by the patterns, and if the maximum is odd, we insert a hyphen. TeX has parameters called \\lefthyphenmin and \\righthyphenmin, with default values 2 and 3 (respectively), meaning that hyphens with only one letter to their left or only one or two to their right are forbidden. The default patterns produce such hyphens so we must also filter them out."
+  },
+  {
+    "objectID": "hyphenation.html#hyphenator-methods",
+    "href": "hyphenation.html#hyphenator-methods",
+    "title": "02_hyphenation",
+    "section": "hyphenator methods",
+    "text": "hyphenator methods\n\nsource\n\nhyphenator\n\n hyphenator\n             (initializer:str|pathlib.Path|collections.abc.Iterable[str]|N\n             one, hyphen:str='-', lefthyphenmin:int=2,\n             righthyphenmin:int=3, alphabet:str|None=None)\n\nHyphenates words\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ninitializer\nstr | pathlib.Path | collections.abc.Iterable[str] | None\n\nfilename of hyphen.tex, or an iterable of its lines, or None\n\n\nhyphen\nstr\n-\n\n\n\nlefthyphenmin\nint\n2\n\n\n\nrighthyphenmin\nint\n3\n\n\n\nalphabet\nstr | None\nNone\nalphabet; None for ASCII default\n\n\n\n\nsource\n\n\nhyphenator.hyphenate\n\n hyphenator.hyphenate (word:str)\n\n\nsource\n\n\nhyphenator.add_exception\n\n hyphenator.add_exception (word:str, split:tuple[str,...]|None=None)\n\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nword\nstr\n\nword to add, possibly with - characters to indicate hyphenation points\n\n\nsplit\ntuple[str, …] | None\nNone\nhow to split the word, or None to split at - characters\n\n\n\n\nsource\n\n\nhyphenator.rm_exception\n\n hyphenator.rm_exception (word:str)\n\n\n\n\n\nType\nDetails\n\n\n\n\nword\nstr\nword to make unexceptional, without hyphens\n\n\n\n\nhyph = hyphenator('''\n\\patterns{\n4m1p pu2t 5pute put3er\nl1g4 lgo3 igo 2ith 4hm\nhy3ph he2n hena4 hen5at ina n2at itio 2io\n}\n\\hyphenation{\npro-gram\n}\n'''.splitlines(), lefthyphenmin=1, righthyphenmin=1)\n\nassert hyph('computer') == 'com-put-er'\nassert hyph('program') == 'pro-gram'\nassert hyph('algorithm') == 'al-go-rithm'\nassert hyph('hyphenation') == 'hy-phen-ation'"
+  },
+  {
+    "objectID": "hyphenation.html#prefix-exceptions",
+    "href": "hyphenation.html#prefix-exceptions",
+    "title": "02_hyphenation",
+    "section": "prefix exceptions",
+    "text": "prefix exceptions\nFinnish tends to form compound words, and it is unseemly to hyphenate them at positions other than the borders between constituent subwords. Finnish also has a lot of declension so it would be a fool’s errand to attempt listing all forms of a single compound word. But the declension almost always happens at the end of the word, so we can add exceptions that depend only on a prefix of a word.\n\n# mock Finnish rules made up for this example\nhyph = hyphenator('''\n\\patterns{\nl1l n1p a1s se1ma a1na ä1a\n}\n'''.splitlines(), lefthyphenmin=1, righthyphenmin=1, alphabet=string.ascii_letters + 'åäöÅÄÖ')\n\nwords = 'sillanpää sillanpään sillanpäästä sillanpäänä sillanpääasema sillanpääasemana sillanpäät'.split()\ntest_eq([hyph(w) for w in words], \n        ['sil-lan-pää', 'sil-lan-pään', 'sil-lan-päästä', 'sil-lan-päänä',\n         'sil-lan-pää-a-se-ma', 'sil-lan-pää-a-se-ma-na', 'sil-lan-päät'])\nhyph.add_prefix_exception('sillan-pää')\nhyph.add_prefix_exception('sillan-pää-asema')\ntest_eq([hyph(w) for w in words], \n        ['sillan-pää', 'sillan-pään', 'sillan-päästä', 'sillan-päänä',\n         'sillan-pää-asema', 'sillan-pää-asemana', 'sillan-päät'])"
+  }
+]
