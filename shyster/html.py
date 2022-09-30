@@ -47,3 +47,19 @@ def hyphenate_soup(
         new = ''.join(pieces)
         t.string.replace_with(new)
 
+
+# %% ../03_html.ipynb 10
+def analyze_soups(
+    dinner: list[bs4.BeautifulSoup],  # soups to be read
+    exclude_classes: tuple[Type[bs4.element.PageElement],...]=default_exclude_classes,  # do not look inside these
+) -> Counter:
+    """Count words appearing in all soups."""
+    counter: Counter = Counter()
+    for soup in dinner:
+        for t in soup.find_all(string=True):
+            if isinstance(t, exclude_classes):
+                continue
+            pieces = re.findall(word_or_punct_re, str(t.string))
+            counter.update(word.lower() for word in pieces
+                           if word_re.fullmatch(word) and word.istitle() or word.islower())
+    return counter
